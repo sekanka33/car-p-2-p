@@ -10,7 +10,7 @@ const CarSearch: React.FC = () => {
   const [filters, setFilters] = useState({
     type: 'All',
     transmission: 'All',
-    maxPrice: 1000,
+    maxPrice: 5000,
   });
 
   const cars = useMemo(() => {
@@ -37,16 +37,16 @@ const CarSearch: React.FC = () => {
             <div className="space-y-4">
               <input 
                 type="range" 
-                min="50" 
-                max="1000" 
-                step="50"
+                min="200" 
+                max="10000" 
+                step="200"
                 value={filters.maxPrice}
                 onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: parseInt(e.target.value) }))}
                 className="w-full h-2 bg-slate-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
               />
               <div className="flex justify-between text-sm font-medium text-slate-600">
-                <span>$50</span>
-                <span>Up to ${filters.maxPrice}</span>
+                <span>R200</span>
+                <span>Up to R{filters.maxPrice}</span>
               </div>
             </div>
           </div>
@@ -138,7 +138,7 @@ const CarSearch: React.FC = () => {
                       <p className="text-slate-500 text-sm font-medium">{car.location}</p>
                     </div>
                     <div className="text-right">
-                      <div className="text-xl font-bold text-slate-900">${car.basePrice}</div>
+                      <div className="text-xl font-bold text-slate-900">R{car.basePrice}</div>
                       <div className="text-xs text-slate-500 font-medium">per day</div>
                     </div>
                   </div>

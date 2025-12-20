@@ -61,7 +61,7 @@ const AdminDashboard: React.FC = () => {
             </div>
             <div>
               <div className="text-slate-400 text-xs font-bold uppercase">Total Volume</div>
-              <div className="text-2xl font-black text-slate-900">${platformStats.totalRevenue.toLocaleString()}</div>
+              <div className="text-2xl font-black text-slate-900">R{platformStats.totalRevenue.toLocaleString()}</div>
             </div>
           </div>
           <div className="bg-white p-6 rounded-3xl border border-slate-200 shadow-sm flex items-center gap-6">
@@ -127,7 +127,7 @@ const AdminDashboard: React.FC = () => {
                         </div>
                       </td>
                       <td className="px-6 py-4 text-sm font-medium">{db.getUsers().find(u => u.id === car.ownerId)?.name}</td>
-                      <td className="px-6 py-4 font-bold">${car.basePrice}</td>
+                      <td className="px-6 py-4 font-bold">R{car.basePrice}</td>
                       <td className="px-6 py-4 text-sm text-slate-500">{car.location}</td>
                       <td className="px-6 py-4">
                         <div className="flex gap-2">
@@ -181,7 +181,7 @@ const AdminDashboard: React.FC = () => {
                   />
                 </div>
                 <div>
-                  <label className="block text-sm font-bold text-slate-700 mb-2">Standard Deposit Fee ($)</label>
+                  <label className="block text-sm font-bold text-slate-700 mb-2">Standard Deposit Fee (R)</label>
                   <input 
                     type="number" 
                     className="w-full bg-slate-50 border-slate-200 rounded-xl px-4 py-3 focus:ring-2 focus:ring-indigo-500"
@@ -218,7 +218,7 @@ const AdminDashboard: React.FC = () => {
                       <tr key={tx.id} className="hover:bg-slate-50/50 transition-colors">
                         <td className="px-6 py-4 font-mono text-xs">{tx.id}</td>
                         <td className="px-6 py-4 font-medium">{owner?.name || 'Unknown'}</td>
-                        <td className="px-6 py-4 font-bold text-green-600">${(tx.amount * 0.8).toFixed(2)}</td>
+                        <td className="px-6 py-4 font-bold text-green-600">R{(tx.amount * 0.8).toFixed(2)}</td>
                         <td className="px-6 py-4">
                           <span className="px-2 py-1 rounded-full bg-amber-50 text-amber-600 text-[10px] font-bold uppercase tracking-wider">Pending</span>
                         </td>

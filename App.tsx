@@ -71,8 +71,8 @@ const App: React.FC = () => {
         <footer className="bg-slate-900 text-white py-12 px-6">
           <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-4 gap-8">
             <div>
-              <h3 className="text-xl font-bold mb-4">DriveShare</h3>
-              <p className="text-slate-400 text-sm">Experience the world's most luxurious peer-to-peer car rental marketplace.</p>
+              <h3 className="text-xl font-bold mb-4">DriveEasy</h3>
+              <p className="text-slate-400 text-sm">Experience South Africa's most convenient peer-to-peer car rental marketplace.</p>
             </div>
             <div>
               <h4 className="font-semibold mb-4">Marketplace</h4>
@@ -100,7 +100,7 @@ const App: React.FC = () => {
             </div>
           </div>
           <div className="max-w-7xl mx-auto border-t border-slate-800 mt-12 pt-8 text-center text-slate-500 text-sm">
-            © {new Date().getFullYear()} DriveShare Inc. All rights reserved.
+            © {new Date().getFullYear()} DriveEasy Inc. All rights reserved.
           </div>
         </footer>
       </div>

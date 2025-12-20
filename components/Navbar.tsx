@@ -16,7 +16,7 @@ const Navbar: React.FC = () => {
           <div className="w-8 h-8 bg-indigo-600 rounded-lg flex items-center justify-center">
             <span className="text-white font-bold">D</span>
           </div>
-          <span className="text-xl font-bold tracking-tight text-slate-900">DriveShare</span>
+          <span className="text-xl font-bold tracking-tight text-slate-900">DriveEasy</span>
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">

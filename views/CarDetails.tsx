@@ -123,7 +123,7 @@ const CarDetails: React.FC<Props> = ({ id }) => {
         <div className="w-full lg:w-96 shrink-0">
           <div className="sticky top-24 bg-white border border-slate-200 rounded-3xl p-8 shadow-xl shadow-slate-100">
             <div className="flex items-end gap-1 mb-8">
-              <span className="text-3xl font-extrabold text-slate-900">${car.basePrice}</span>
+              <span className="text-3xl font-extrabold text-slate-900">R{car.basePrice}</span>
               <span className="text-slate-500 font-medium mb-1">/ day</span>
             </div>
 
@@ -157,16 +157,16 @@ const CarDetails: React.FC<Props> = ({ id }) => {
             {dates.start && dates.end && (
               <div className="space-y-3 mb-8 pt-4 border-t border-slate-100">
                 <div className="flex justify-between text-slate-600 font-medium">
-                  <span>${car.basePrice} x 3 days</span>
-                  <span>${car.basePrice * 3}</span>
+                  <span>R{car.basePrice} x 3 days</span>
+                  <span>R{car.basePrice * 3}</span>
                 </div>
                 <div className="flex justify-between text-slate-600 font-medium">
                   <span>Refundable deposit</span>
-                  <span>${rules.depositFee}</span>
+                  <span>R{rules.depositFee}</span>
                 </div>
                 <div className="flex justify-between text-slate-900 font-bold text-lg pt-2 border-t border-slate-100">
                   <span>Total price</span>
-                  <span>${calculateTotal()}</span>
+                  <span>R{calculateTotal()}</span>
                 </div>
               </div>
             )}

@@ -1,6 +1,6 @@
 {
-  "name": "DriveShare - P2P Car Rental Platform",
-  "description": "A high-end peer-to-peer car rental platform similar to Turo, featuring distinct roles for Renters, Owners, and Admins with a robust booking and approval workflow.",
+  "name": "DriveEasy - P2P Car Rental Platform",
+  "description": "A high-end peer-to-peer car rental platform similar to RentMyRide, featuring distinct roles for Renters, Owners, and Admins with a robust booking and approval workflow.",
   "requestFramePermissions": [
     "camera",
     "microphone"

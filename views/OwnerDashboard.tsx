@@ -19,7 +19,7 @@ const OwnerDashboard: React.FC = () => {
     seats: 5,
     mileage: 0,
     description: '',
-    basePrice: 100,
+    basePrice: 500,
     location: '',
     type: 'Sedan'
   });
@@ -72,7 +72,7 @@ const OwnerDashboard: React.FC = () => {
         <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-12">
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
             <div className="text-slate-400 text-xs font-bold uppercase mb-2">Total Earnings</div>
-            <div className="text-3xl font-extrabold text-slate-900">${totalEarnings.toFixed(2)}</div>
+            <div className="text-3xl font-extrabold text-slate-900">R{totalEarnings.toFixed(2)}</div>
             <div className="text-green-500 text-xs font-bold mt-1">+12% from last month</div>
           </div>
           <div className="bg-white p-6 rounded-2xl border border-slate-200 shadow-sm">
@@ -113,7 +113,7 @@ const OwnerDashboard: React.FC = () => {
                       </div>
                     </div>
                     <div className="text-right">
-                      <div className="font-bold text-slate-900">${booking.totalPrice}</div>
+                      <div className="font-bold text-slate-900">R{booking.totalPrice}</div>
                       <div className={`text-xs font-bold uppercase tracking-wider ${booking.status === 'PAID' ? 'text-green-500' : 'text-amber-500'}`}>{booking.status}</div>
                     </div>
                   </div>
@@ -178,12 +178,12 @@ const OwnerDashboard: React.FC = () => {
                 <input required type="number" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.year} onChange={e => setNewCar({...newCar, year: parseInt(e.target.value)})} />
               </div>
               <div className="col-span-1">
-                <label className="block text-sm font-bold text-slate-700 mb-1">Base Price ($/day)</label>
+                <label className="block text-sm font-bold text-slate-700 mb-1">Base Price (R/day)</label>
                 <input required type="number" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.basePrice} onChange={e => setNewCar({...newCar, basePrice: parseInt(e.target.value)})} />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Location</label>
-                <input required type="text" placeholder="e.g. San Francisco" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.location} onChange={e => setNewCar({...newCar, location: e.target.value})} />
+                <input required type="text" placeholder="e.g. Cape Town" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.location} onChange={e => setNewCar({...newCar, location: e.target.value})} />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>

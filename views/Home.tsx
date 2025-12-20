@@ -17,7 +17,7 @@ const Home: React.FC = () => {
         <div className="flex items-end justify-between mb-10">
           <div>
             <h2 className="text-3xl font-bold text-slate-900 mb-2">Featured Experiences</h2>
-            <p className="text-slate-500">Selected premium cars available right now.</p>
+            <p className="text-slate-500">Selected premium cars available right now in SA.</p>
           </div>
           <button 
             onClick={() => setView('SEARCH')}
@@ -44,7 +44,7 @@ const Home: React.FC = () => {
                   className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                 />
                 <div className="absolute top-4 right-4 bg-white/90 backdrop-blur px-3 py-1 rounded-full text-xs font-bold text-slate-900">
-                  ${car.basePrice}/day
+                  R{car.basePrice}/day
                 </div>
               </div>
               <h3 className="text-lg font-bold text-slate-900">{car.make} {car.model} {car.year}</h3>
@@ -63,8 +63,8 @@ const Home: React.FC = () => {
           <div className="md:w-1/2">
             <h2 className="text-4xl font-bold text-white mb-6">List your car and start earning.</h2>
             <p className="text-slate-400 text-lg mb-8">
-              Join thousands of hosts on DriveShare. Turn your vehicle into a powerful engine for income. 
-              We provide insurance coverage and the tools you need to succeed.
+              Join thousands of hosts on DriveEasy. Turn your vehicle into a powerful engine for income. 
+              We provide insurance coverage and the tools you need to succeed in the South African market.
             </p>
             <button 
               onClick={() => setView('OWNER_DASH')}
@@ -75,7 +75,7 @@ const Home: React.FC = () => {
           </div>
           <div className="md:w-1/2 grid grid-cols-2 gap-4">
             <div className="bg-white/5 p-6 rounded-2xl backdrop-blur-sm">
-              <div className="text-3xl font-bold text-white mb-2">$800+</div>
+              <div className="text-3xl font-bold text-white mb-2">R12,000+</div>
               <div className="text-slate-400 text-sm">Average monthly earnings for active hosts</div>
             </div>
             <div className="bg-white/5 p-6 rounded-2xl backdrop-blur-sm">
@@ -88,7 +88,7 @@ const Home: React.FC = () => {
             </div>
             <div className="bg-white/5 p-6 rounded-2xl backdrop-blur-sm">
               <div className="text-3xl font-bold text-white mb-2">1M+</div>
-              <div className="text-slate-400 text-sm">Happy trips across North America</div>
+              <div className="text-slate-400 text-sm">Happy trips across South Africa</div>
             </div>
           </div>
         </div>
