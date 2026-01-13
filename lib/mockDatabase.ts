@@ -18,11 +18,11 @@ const INITIAL_CARS: Car[] = [
     seats: 5,
     mileage: 12000,
     description: 'Electric elegance for a smooth ride around the city.',
-    basePrice: 120,
+    basePrice: 1500,
     images: ['https://picsum.photos/seed/tesla/800/600', 'https://picsum.photos/seed/tesla2/800/600'],
     documents: ['doc1.pdf'],
     status: CarStatus.APPROVED,
-    location: 'San Francisco',
+    location: 'Cape Town',
     type: 'Sedan'
   },
   {
@@ -35,11 +35,11 @@ const INITIAL_CARS: Car[] = [
     seats: 2,
     mileage: 5000,
     description: 'The ultimate sports car experience.',
-    basePrice: 350,
+    basePrice: 4500,
     images: ['https://picsum.photos/seed/porsche/800/600'],
     documents: ['doc2.pdf'],
     status: CarStatus.APPROVED,
-    location: 'Los Angeles',
+    location: 'Johannesburg',
     type: 'Sports'
   },
   {
@@ -52,16 +52,16 @@ const INITIAL_CARS: Car[] = [
     seats: 7,
     mileage: 30000,
     description: 'Rugged capability for any adventure.',
-    basePrice: 200,
+    basePrice: 2000,
     images: ['https://picsum.photos/seed/defender/800/600'],
     documents: ['doc3.pdf'],
     status: CarStatus.PENDING,
-    location: 'Denver',
+    location: 'Durban',
     type: 'SUV'
   }
 ];
 
-const DB_KEY = 'driveshare_db_v1';
+const DB_KEY = 'driveshare_db_v2';
 
 class MockDatabase {
   private data: {

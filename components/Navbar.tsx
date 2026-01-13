@@ -2,14 +2,21 @@
 import React from 'react';
 import { useApp } from '../App';
 import { UserRole } from '../types';
+import { supabase } from '../lib/supabase';
 
 const Navbar: React.FC = () => {
-  const { user, setUser, setView, view } = useApp();
+  const { user, setView, view } = useApp();
+
+  const handleLogout = async () => {
+    await supabase.auth.signOut();
+    // No need to setUser(null) as useAuth listener will handle it
+    setView('HOME');
+  };
 
   return (
     <nav className="sticky top-0 z-50 bg-white/80 backdrop-blur-md border-b border-slate-200 px-6 py-4">
       <div className="max-w-7xl mx-auto flex items-center justify-between">
-        <div 
+        <div
           className="flex items-center gap-2 cursor-pointer"
           onClick={() => setView('HOME')}
         >
@@ -20,19 +27,19 @@ const Navbar: React.FC = () => {
         </div>
 
         <div className="hidden md:flex items-center gap-8 text-sm font-medium text-slate-600">
-          <button 
+          <button
             onClick={() => setView('SEARCH')}
             className={`hover:text-indigo-600 transition-colors ${view === 'SEARCH' ? 'text-indigo-600' : ''}`}
           >
             Find a Car
           </button>
-          
+
           {user?.role === UserRole.RENTER && (
             <button className="hover:text-indigo-600 transition-colors">My Trips</button>
           )}
 
           {user?.role === UserRole.OWNER && (
-            <button 
+            <button
               onClick={() => setView('OWNER_DASH')}
               className={`hover:text-indigo-600 transition-colors ${view === 'OWNER_DASH' ? 'text-indigo-600' : ''}`}
             >
@@ -41,7 +48,7 @@ const Navbar: React.FC = () => {
           )}
 
           {user?.role === UserRole.ADMIN && (
-            <button 
+            <button
               onClick={() => setView('ADMIN_DASH')}
               className={`hover:text-indigo-600 transition-colors ${view === 'ADMIN_DASH' ? 'text-indigo-600' : ''}`}
             >
@@ -53,13 +60,13 @@ const Navbar: React.FC = () => {
         <div className="flex items-center gap-4">
           {!user ? (
             <>
-              <button 
+              <button
                 onClick={() => setView('LOGIN')}
                 className="text-sm font-medium text-slate-600 hover:text-slate-900"
               >
                 Log in
               </button>
-              <button 
+              <button
                 onClick={() => setView('LOGIN')}
                 className="bg-slate-900 text-white px-4 py-2 rounded-lg text-sm font-medium hover:bg-slate-800 transition-colors"
               >
@@ -72,13 +79,13 @@ const Navbar: React.FC = () => {
                 <p className="text-sm font-semibold leading-none">{user.name}</p>
                 <p className="text-xs text-slate-500 capitalize">{user.role.toLowerCase()}</p>
               </div>
-              <button 
-                onClick={() => setUser(null)}
+              <button
+                onClick={handleLogout}
                 className="w-10 h-10 rounded-full border-2 border-indigo-100 p-0.5 overflow-hidden group"
               >
-                <img 
-                  src={user.avatar || 'https://picsum.photos/100/100'} 
-                  alt="Avatar" 
+                <img
+                  src={user.avatar || 'https://picsum.photos/100/100'}
+                  alt="Avatar"
                   className="w-full h-full rounded-full object-cover group-hover:opacity-75"
                 />
               </button>

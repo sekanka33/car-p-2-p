@@ -1,15 +1,41 @@
 
-import React, { useState } from 'react';
-import { db } from '../lib/mockDatabase';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { useApp } from '../App';
-import { CarStatus, Car, UserRole } from '../types';
+import { useBookings } from '../hooks/useBookings';
+import { CarStatus, Car, UserRole, Booking, Transaction } from '../types';
 
 const OwnerDashboard: React.FC = () => {
   const { user, setView } = useApp();
-  const ownerCars = db.getCars().filter(c => c.ownerId === user?.id);
-  const ownerBookings = db.getBookings().filter(b => ownerCars.some(c => c.id === b.carId));
-  const ownerTransactions = db.getTransactions().filter(t => ownerBookings.some(b => b.id === t.bookingId));
-  
+  const { bookings: ownerBookings, loading: bookingsLoading } = useBookings(user?.id);
+  const [ownerCars, setOwnerCars] = useState<Car[]>([]);
+  const [carsLoading, setCarsLoading] = useState(true);
+
+  // We need to fetch transactions? Or maybe just estimate from bookings for now.
+  // The original mock logic was: cancel out fee.
+  // We can just sum up booking totals for now.
+
+  useEffect(() => {
+    if (user) {
+      fetchOwnerCars();
+    }
+  }, [user]);
+
+  async function fetchOwnerCars() {
+    try {
+      const { data, error } = await supabase
+        .from('cars')
+        .select('*')
+        .eq('owner_id', user!.id);
+
+      if (data) setOwnerCars(data);
+    } catch (e) {
+      console.error(e);
+    } finally {
+      setCarsLoading(false);
+    }
+  }
+
   const [showForm, setShowForm] = useState(false);
   const [newCar, setNewCar] = useState<Partial<Car>>({
     make: '',
@@ -34,22 +60,32 @@ const OwnerDashboard: React.FC = () => {
     );
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    const car: Car = {
-      ...newCar as Car,
-      id: 'c' + Math.random().toString(36).substr(2, 9),
-      ownerId: user.id,
-      status: CarStatus.PENDING,
-      images: ['https://picsum.photos/seed/newcar/800/600'],
-      documents: []
-    };
-    db.addCar(car);
-    setShowForm(false);
-    alert('Listing submitted! Waiting for admin approval.');
+    try {
+      const { error } = await supabase
+        .from('cars')
+        .insert({
+          ...newCar,
+          owner_id: user!.id,
+          status: CarStatus.PENDING,
+          images: ['https://picsum.photos/seed/newcar/800/600'], // Placeholder
+          documents: []
+        });
+
+      if (error) throw error;
+
+      setShowForm(false);
+      alert('Listing submitted! Waiting for admin approval.');
+      fetchOwnerCars(); // Refresh list
+    } catch (error: any) {
+      alert('Error creating listing: ' + error.message);
+    }
   };
 
-  const totalEarnings = ownerTransactions.reduce((acc, t) => acc + (t.amount * 0.8), 0); // 20% platform fee
+  const totalEarnings = ownerBookings
+    .filter(b => b.status === 'PAID' || b.status === 'COMPLETED')
+    .reduce((acc, b) => acc + (b.totalPrice * 0.8), 0);
 
   return (
     <div className="bg-slate-50 min-h-screen">
@@ -59,7 +95,7 @@ const OwnerDashboard: React.FC = () => {
             <h1 className="text-3xl font-bold text-slate-900">Owner Dashboard</h1>
             <p className="text-slate-500 font-medium">Manage your fleet and earnings</p>
           </div>
-          <button 
+          <button
             onClick={() => setShowForm(true)}
             className="bg-indigo-600 text-white px-6 py-3 rounded-xl font-bold hover:bg-indigo-700 transition-all flex items-center justify-center gap-2"
           >
@@ -136,10 +172,9 @@ const OwnerDashboard: React.FC = () => {
                     <img src={car.images[0]} className="w-16 h-12 object-cover rounded-lg" alt="" />
                     <div className="flex-grow">
                       <div className="font-bold text-sm text-slate-900">{car.make} {car.model}</div>
-                      <div className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full inline-block mt-1 ${
-                        car.status === CarStatus.APPROVED ? 'bg-green-100 text-green-700' : 
-                        car.status === CarStatus.PENDING ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
-                      }`}>
+                      <div className={`text-[10px] font-bold uppercase px-2 py-0.5 rounded-full inline-block mt-1 ${car.status === CarStatus.APPROVED ? 'bg-green-100 text-green-700' :
+                          car.status === CarStatus.PENDING ? 'bg-amber-100 text-amber-700' : 'bg-red-100 text-red-700'
+                        }`}>
                         {car.status}
                       </div>
                     </div>
@@ -167,27 +202,27 @@ const OwnerDashboard: React.FC = () => {
             <form onSubmit={handleSubmit} className="p-8 grid grid-cols-2 gap-6 max-h-[80vh] overflow-y-auto">
               <div className="col-span-1">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Make</label>
-                <input required type="text" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.make} onChange={e => setNewCar({...newCar, make: e.target.value})} />
+                <input required type="text" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.make} onChange={e => setNewCar({ ...newCar, make: e.target.value })} />
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Model</label>
-                <input required type="text" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.model} onChange={e => setNewCar({...newCar, model: e.target.value})} />
+                <input required type="text" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.model} onChange={e => setNewCar({ ...newCar, model: e.target.value })} />
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Year</label>
-                <input required type="number" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.year} onChange={e => setNewCar({...newCar, year: parseInt(e.target.value)})} />
+                <input required type="number" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.year} onChange={e => setNewCar({ ...newCar, year: parseInt(e.target.value) })} />
               </div>
               <div className="col-span-1">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Base Price (R/day)</label>
-                <input required type="number" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.basePrice} onChange={e => setNewCar({...newCar, basePrice: parseInt(e.target.value)})} />
+                <input required type="number" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.basePrice} onChange={e => setNewCar({ ...newCar, basePrice: parseInt(e.target.value) })} />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Location</label>
-                <input required type="text" placeholder="e.g. Cape Town" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.location} onChange={e => setNewCar({...newCar, location: e.target.value})} />
+                <input required type="text" placeholder="e.g. Cape Town" className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.location} onChange={e => setNewCar({ ...newCar, location: e.target.value })} />
               </div>
               <div className="col-span-2">
                 <label className="block text-sm font-bold text-slate-700 mb-1">Description</label>
-                <textarea required rows={3} className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.description} onChange={e => setNewCar({...newCar, description: e.target.value})} />
+                <textarea required rows={3} className="w-full bg-slate-50 border-slate-200 rounded-xl focus:ring-indigo-500" value={newCar.description} onChange={e => setNewCar({ ...newCar, description: e.target.value })} />
               </div>
               <div className="col-span-2">
                 <button type="submit" className="w-full bg-indigo-600 text-white py-4 rounded-xl font-bold hover:bg-indigo-700 shadow-lg shadow-indigo-100 transition-all">

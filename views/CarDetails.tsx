@@ -1,8 +1,8 @@
 
-import React, { useState } from 'react';
-import { db } from '../lib/mockDatabase';
+import React, { useState, useEffect } from 'react';
+import { supabase } from '../lib/supabase';
 import { useApp } from '../App';
-import { BookingStatus, UserRole } from '../types';
+import { BookingStatus, Car, GlobalPriceRules } from '../types';
 
 interface Props {
   id: string;
@@ -10,13 +10,49 @@ interface Props {
 
 const CarDetails: React.FC<Props> = ({ id }) => {
   const { user, setView } = useApp();
-  const car = db.getCars().find(c => c.id === id);
-  const rules = db.getRules();
-  
+  const [car, setCar] = useState<Car | null>(null);
+  const [rules, setRules] = useState<GlobalPriceRules>({ weekendMultiplier: 1.2, seasonalMultiplier: 1.1, depositFee: 500 });
+
   const [dates, setDates] = useState({ start: '', end: '' });
   const [isBooking, setIsBooking] = useState(false);
+  const [loading, setLoading] = useState(true);
 
-  if (!car) return <div>Car not found</div>;
+  useEffect(() => {
+    async function fetchData() {
+      try {
+        setLoading(true);
+        // Fetch Car
+        const { data: carData } = await supabase
+          .from('cars')
+          .select('*')
+          .eq('id', id)
+          .single();
+
+        if (carData) setCar(carData);
+
+        // Fetch Rules
+        const { data: rulesData } = await supabase
+          .from('global_rules')
+          .select('*')
+          .single();
+
+        if (rulesData) setRules({
+          weekendMultiplier: rulesData.weekend_multiplier,
+          seasonalMultiplier: rulesData.seasonal_multiplier,
+          depositFee: rulesData.deposit_fee
+        });
+
+      } catch (error) {
+        console.error("Error fetching car details", error);
+      } finally {
+        setLoading(false);
+      }
+    }
+    fetchData();
+  }, [id]);
+
+  if (loading) return <div className="p-10 text-center">Loading car details...</div>;
+  if (!car) return <div className="p-10 text-center">Car not found</div>;
 
   const calculateTotal = () => {
     if (!dates.start || !dates.end) return 0;
@@ -24,44 +60,55 @@ const CarDetails: React.FC<Props> = ({ id }) => {
     const end = new Date(dates.end);
     const diffTime = Math.abs(end.getTime() - start.getTime());
     const diffDays = Math.ceil(diffTime / (1000 * 60 * 60 * 24)) || 1;
-    
+
     // Simplistic pricing: base * days + deposit
     return car.basePrice * diffDays + rules.depositFee;
   };
 
-  const handleBook = () => {
+  const handleBook = async () => {
     if (!user) {
       setView('LOGIN');
       return;
     }
 
     setIsBooking(true);
-    // Simulate API delay
-    setTimeout(() => {
-      const total = calculateTotal();
-      const bookingId = 'b' + Math.random().toString(36).substr(2, 9);
-      
-      db.addBooking({
-        id: bookingId,
-        renterId: user.id,
-        carId: car.id,
-        startDate: dates.start,
-        endDate: dates.end,
-        totalPrice: total,
-        status: BookingStatus.PAID,
-        createdAt: new Date().toISOString()
-      });
 
-      db.addTransaction({
-        id: 'tx' + Math.random().toString(36).substr(2, 9),
-        bookingId: bookingId,
-        amount: total,
-        paymentStatus: 'success',
-        payoutStatus: 'pending'
-      });
+    try {
+      const total = calculateTotal();
+
+      const { data: booking, error: bookingError } = await supabase
+        .from('bookings')
+        .insert({
+          renter_id: user.id,
+          car_id: car.id,
+          start_date: new Date(dates.start).toISOString(),
+          end_date: new Date(dates.end).toISOString(),
+          total_price: total,
+          status: BookingStatus.PAID // In real app, this would be PENDING until payment
+        })
+        .select()
+        .single();
+
+      if (bookingError) throw bookingError;
+
+      // Create transaction
+      const { error: txError } = await supabase
+        .from('transactions')
+        .insert({
+          booking_id: booking.id,
+          amount: total,
+          payment_status: 'success',
+          payout_status: 'pending'
+        });
+
+      if (txError) throw txError;
 
       setView('SUCCESS');
-    }, 1500);
+    } catch (error: any) {
+      alert('Booking failed: ' + error.message);
+    } finally {
+      setIsBooking(false);
+    }
   };
 
   return (
@@ -131,20 +178,20 @@ const CarDetails: React.FC<Props> = ({ id }) => {
               <div className="grid grid-cols-2 gap-2">
                 <div className="p-3 border border-slate-200 rounded-xl">
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Trip Start</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     className="w-full border-none p-0 focus:ring-0 text-sm font-bold"
                     value={dates.start}
-                    onChange={(e) => setDates(prev => ({...prev, start: e.target.value}))}
+                    onChange={(e) => setDates(prev => ({ ...prev, start: e.target.value }))}
                   />
                 </div>
                 <div className="p-3 border border-slate-200 rounded-xl">
                   <label className="block text-[10px] font-bold text-slate-400 uppercase mb-1">Trip End</label>
-                  <input 
-                    type="date" 
+                  <input
+                    type="date"
                     className="w-full border-none p-0 focus:ring-0 text-sm font-bold"
                     value={dates.end}
-                    onChange={(e) => setDates(prev => ({...prev, end: e.target.value}))}
+                    onChange={(e) => setDates(prev => ({ ...prev, end: e.target.value }))}
                   />
                 </div>
               </div>
@@ -171,14 +218,13 @@ const CarDetails: React.FC<Props> = ({ id }) => {
               </div>
             )}
 
-            <button 
+            <button
               disabled={!dates.start || !dates.end || isBooking}
               onClick={handleBook}
-              className={`w-full py-4 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 ${
-                !dates.start || !dates.end 
-                ? 'bg-slate-100 text-slate-400 cursor-not-allowed' 
+              className={`w-full py-4 rounded-xl font-bold transition-all active:scale-95 flex items-center justify-center gap-2 ${!dates.start || !dates.end
+                ? 'bg-slate-100 text-slate-400 cursor-not-allowed'
                 : 'bg-indigo-600 text-white hover:bg-indigo-700 shadow-lg shadow-indigo-200'
-              }`}
+                }`}
             >
               {isBooking ? (
                 <>

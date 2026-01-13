@@ -1,29 +1,31 @@
 
 import React, { useState, useMemo } from 'react';
-import { db } from '../lib/mockDatabase';
+import { useCars } from '../hooks/useCars';
 import { CarStatus } from '../types';
 import { useApp } from '../App';
 
 const CarSearch: React.FC = () => {
-  const { setView, setSelectedCarId } = useApp();
-  const [searchTerm, setSearchTerm] = useState('');
+  const { setView, setSelectedCarId, searchQuery, setSearchQuery } = useApp();
   const [filters, setFilters] = useState({
     type: 'All',
     transmission: 'All',
     maxPrice: 5000,
   });
 
+  const { cars: fetchedCars, loading, error } = useCars();
+
   const cars = useMemo(() => {
-    return db.getCars().filter(car => {
-      const matchesSearch = `${car.make} ${car.model} ${car.location}`.toLowerCase().includes(searchTerm.toLowerCase());
+    if (loading || error) return [];
+    return fetchedCars.filter(car => {
+      const matchesSearch = `${car.make} ${car.model} ${car.location}`.toLowerCase().includes(searchQuery.toLowerCase());
       const matchesType = filters.type === 'All' || car.type === filters.type;
       const matchesTransmission = filters.transmission === 'All' || car.transmission === filters.transmission;
       const matchesPrice = car.basePrice <= filters.maxPrice;
       const isApproved = car.status === CarStatus.APPROVED;
-      
+
       return matchesSearch && matchesType && matchesTransmission && matchesPrice && isApproved;
     });
-  }, [searchTerm, filters]);
+  }, [searchQuery, filters, fetchedCars, loading, error]);
 
   const carTypes = ['All', 'Sedan', 'SUV', 'Luxury', 'Sports', 'Electric'];
 
@@ -35,10 +37,10 @@ const CarSearch: React.FC = () => {
           <div>
             <h3 className="text-sm font-bold uppercase tracking-wider text-slate-500 mb-4">Price Range</h3>
             <div className="space-y-4">
-              <input 
-                type="range" 
-                min="200" 
-                max="10000" 
+              <input
+                type="range"
+                min="200"
+                max="10000"
                 step="200"
                 value={filters.maxPrice}
                 onChange={(e) => setFilters(prev => ({ ...prev, maxPrice: parseInt(e.target.value) }))}
@@ -56,8 +58,8 @@ const CarSearch: React.FC = () => {
             <div className="space-y-2">
               {carTypes.map(type => (
                 <label key={type} className="flex items-center gap-3 cursor-pointer group">
-                  <input 
-                    type="radio" 
+                  <input
+                    type="radio"
                     name="type"
                     checked={filters.type === type}
                     onChange={() => setFilters(prev => ({ ...prev, type }))}
@@ -89,12 +91,12 @@ const CarSearch: React.FC = () => {
         <div className="flex-grow">
           <div className="mb-8">
             <div className="relative">
-              <input 
-                type="text" 
+              <input
+                type="text"
                 placeholder="Search by make, model, or location..."
                 className="w-full bg-slate-100 border-none rounded-2xl py-4 pl-12 pr-6 focus:ring-2 focus:ring-indigo-500 text-lg transition-shadow shadow-sm"
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                value={searchQuery}
+                onChange={(e) => setSearchQuery(e.target.value)}
               />
               <div className="absolute left-4 top-1/2 -translate-y-1/2 text-slate-400">
                 <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" /></svg>
@@ -117,7 +119,7 @@ const CarSearch: React.FC = () => {
 
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
             {cars.map(car => (
-              <div 
+              <div
                 key={car.id}
                 onClick={() => {
                   setSelectedCarId(car.id);
@@ -160,13 +162,25 @@ const CarSearch: React.FC = () => {
           {cars.length === 0 && (
             <div className="text-center py-20 bg-slate-50 rounded-3xl">
               <div className="w-20 h-20 bg-slate-200 rounded-full flex items-center justify-center mx-auto mb-4">
-                 <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
+                <svg className="w-10 h-10 text-slate-400" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M9.172 9.172a4 4 0 015.656 0M9 10h.01M15 10h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" /></svg>
               </div>
               <h3 className="text-xl font-bold text-slate-900 mb-2">No cars found</h3>
               <p className="text-slate-500">Try adjusting your filters or search term.</p>
             </div>
           )}
         </div>
+
+        {loading && (
+          <div className="flex justify-center items-center py-20 w-full">
+            <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600"></div>
+          </div>
+        )}
+
+        {error && (
+          <div className="text-center py-20 text-red-500">
+            Error loading cars: {error}
+          </div>
+        )}
       </div>
     </div>
   );

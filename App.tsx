@@ -2,7 +2,7 @@
 import React, { useState, useEffect, createContext, useContext } from 'react';
 // Fix: Import User and UserRole from the types module where they are defined and exported
 import { User, UserRole } from './types';
-import { db } from './lib/mockDatabase';
+import { useAuth } from './hooks/useAuth';
 import Navbar from './components/Navbar';
 import Home from './views/Home';
 import CarSearch from './views/CarSearch';
@@ -17,11 +17,13 @@ type View = 'HOME' | 'SEARCH' | 'DETAILS' | 'OWNER_DASH' | 'ADMIN_DASH' | 'LOGIN
 
 interface AppContextType {
   user: User | null;
-  setUser: (user: User | null) => void;
+  // setUser removed as we use Supabase Auth
   view: View;
   setView: (view: View) => void;
   selectedCarId: string | null;
   setSelectedCarId: (id: string | null) => void;
+  searchQuery: string;
+  setSearchQuery: (query: string) => void;
 }
 
 const AppContext = createContext<AppContextType | undefined>(undefined);
@@ -33,20 +35,14 @@ export const useApp = () => {
 };
 
 const App: React.FC = () => {
-  const [user, setUser] = useState<User | null>(() => {
-    const saved = localStorage.getItem('driveshare_session');
-    return saved ? JSON.parse(saved) : null;
-  });
+  const { user, loading } = useAuth();
   const [view, setView] = useState<View>('HOME');
   const [selectedCarId, setSelectedCarId] = useState<string | null>(null);
+  const [searchQuery, setSearchQuery] = useState<string>('');
 
-  useEffect(() => {
-    if (user) {
-      localStorage.setItem('driveshare_session', JSON.stringify(user));
-    } else {
-      localStorage.removeItem('driveshare_session');
-    }
-  }, [user]);
+  if (loading) {
+    return <div className="min-h-screen flex items-center justify-center text-indigo-600">Loading...</div>;
+  }
 
   const renderView = () => {
     switch (view) {
@@ -62,7 +58,7 @@ const App: React.FC = () => {
   };
 
   return (
-    <AppContext.Provider value={{ user, setUser, view, setView, selectedCarId, setSelectedCarId }}>
+    <AppContext.Provider value={{ user, view, setView, selectedCarId, setSelectedCarId, searchQuery, setSearchQuery }}>
       <div className="min-h-screen flex flex-col">
         <Navbar />
         <main className="flex-grow">
